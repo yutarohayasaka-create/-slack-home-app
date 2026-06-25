@@ -1,3 +1,4 @@
+const express = require('express');
 const { App, ExpressReceiver } = require('@slack/bolt');
 
 const receiver = new ExpressReceiver({
@@ -9,10 +10,14 @@ const app = new App({
   receiver,
 });
 
+receiver.router.use(express.json());
+
 receiver.router.post('/slack/events', (req, res) => {
   if (req.body && req.body.challenge) {
-    return res.json({ challenge: req.body.challenge });
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json({ challenge: req.body.challenge });
   }
+  res.status(200).send('OK');
 });
 
 app.event('app_home_opened', async ({ event, client }) => {
