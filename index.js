@@ -1,23 +1,10 @@
-const express = require('express');
-const { App, ExpressReceiver } = require('@slack/bolt');
-
-const receiver = new ExpressReceiver({
-  signingSecret: process.env.SLACK_SIGNING_SECRET,
-});
+const { App } = require('@slack/bolt');
 
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
-  receiver,
-});
-
-receiver.router.use(express.json());
-
-receiver.router.post('/slack/events', (req, res) => {
-  if (req.body && req.body.challenge) {
-    res.setHeader('Content-Type', 'application/json');
-    return res.status(200).json({ challenge: req.body.challenge });
-  }
-  res.status(200).send('OK');
+  signingSecret: process.env.SLACK_SIGNING_SECRET,
+  socketMode: true,
+  appToken: process.env.SLACK_APP_TOKEN,
 });
 
 app.event('app_home_opened', async ({ event, client }) => {
@@ -61,6 +48,6 @@ app.event('app_home_opened', async ({ event, client }) => {
 });
 
 (async () => {
-  await app.start(process.env.PORT || 3000);
+  await app.start();
   console.log('App is running!');
 })();
